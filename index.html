@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full antialiased">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>MarkFlow Studio — Pembaca & Editor Markdown Bergaya App Store</title>
+  <meta name="description" content="Aplikasi PWA pembaca dan editor file Markdown (.md, .mdx, .txt, .json, .yaml, .csv, .log) dengan desain App Store dan sistem Auto-Update GitHub." />
+  <meta name="theme-color" content="#007AFF" id="metaThemeColor" />
+
+  <!-- Apple iOS & macOS Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MarkFlow" />
+  <link rel="apple-touch-icon" href="./icon192px.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon192px.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon512px.png" />
+  <link rel="manifest" href="./manifest.json" />
+
+  <!-- Fonts & Libraries (Exact Versions) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #F2F2F7;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: rgba(255, 255, 255, 0.78);
+      --text-primary: #1C1C1E;
+      --text-secondary: #636366;
+      --text-muted: #8E8E93;
+      --border-color: rgba(60, 60, 67, 0.12);
+      --accent-blue: #007AFF;
+      --accent-indigo: #5856D6;
+      --card-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+      --reader-font-size: 16px;
+      --reader-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --reader-max-width: 780px;
+    }
+
+    html.theme-dark {
+      --bg-primary: #000000;
+      --bg-secondary: #1C1C1E;
+      --bg-tertiary: rgba(28, 28, 30, 0.82);
+      --text-primary: #F2F2F7;
+      --text-secondary: #AEAEB2;
+      --text-muted: #8E8E93;
+      --border-color: rgba(255, 255, 255, 0.14);
+      --accent-blue: #0A84FF;
+      --accent-indigo: #5E5CE6;
+      --card-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.45);
+    }
+
+    html.theme-sepia {
+      --bg-primary: #F4ECD8;
+      --bg-secondary: #FBF5E6;
+      --bg-tertiary: rgba(251, 245, 230, 0.85);
+      --text-primary: #3C2F2F;
+      --text-secondary: #6E5A4F;
+      --text-muted: #937D6E;
+      --border-color: rgba(110, 90, 79, 0.18);
+      --accent-blue: #B85D19;
+      --accent-indigo: #8C4212;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .app-surface {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--card-shadow);
+    }
+
+    .glass-bar {
+      background-color: var(--bg-tertiary);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-color: var(--border-color);
+    }
+
+    .text-sub {
+      color: var(--text-secondary);
+    }
+
+    .text-mute {
+      color: var(--text-muted);
+    }
+
+    .border-subtle {
+      border-color: var(--border-color);
+    }
+
+    /* Markdown Reader Typography */
+    .md-prose {
+      font-size: var(--reader-font-size);
+      font-family: var(--reader-font-family);
+      max-width: var(--reader-max-width);
+      line-height: 1.75;
+      color: var(--text-primary);
+      word-wrap: break-word;
+    }
+
+    .md-prose h1 {
+      font-size: 2em;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-top: 0.4em;
+      margin-bottom: 0.6em;
+      line-height: 1.25;
+      padding-bottom: 0.35em;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .md-prose h2 {
+      font-size: 1.5em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-top: 1.6em;
+      margin-bottom: 0.6em;
+      line-height: 1.3;
+      padding-bottom: 0.25em;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .md-prose h3 {
+      font-size: 1.25em;
+      font-weight: 700;
+      margin-top: 1.35em;
+      margin-bottom: 0.45em;
+      line-height: 1.4;
+    }
+
+    .md-prose h4 {
+      font-size: 1.05em;
+      font-weight: 600;
+      margin-top: 1.1em;
+      margin-bottom: 0.4em;
+    }
+
+    .md-prose p {
+      margin-top: 0;
+      margin-bottom: 1.15em;
+    }
+
+    .md-prose ul {
+      list-style-type: disc;
+      padding-left: 1.6em;
+      margin-bottom: 1.15em;
+    }
+
+    .md-prose ol {
+      list-style-type: decimal;
+      padding-left: 1.6em;
+      margin-bottom: 1.15em;
+    }
+
+    .md-prose li {
+      margin-bottom: 0.35em;
+    }
+
+    .md-prose li input[type="checkbox"] {
+      accent-color: var(--accent-blue);
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.45rem;
+      border-radius: 4px;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+
+    .md-prose blockquote {
+      border-left: 4px solid var(--accent-blue);
+      background: rgba(0, 122, 255, 0.06);
+      padding: 0.85em 1.15em;
+      border-radius: 0 12px 12px 0;
+      margin: 1.25em 0;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .md-prose code:not(pre code) {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875em;
+      background: rgba(142, 142, 147, 0.16);
+      padding: 0.2em 0.45em;
+      border-radius: 6px;
+      color: var(--accent-blue);
+    }
+
+    .md-prose pre {
+      position: relative;
+      background: #16181D;
+      color: #E6EDF3;
+      padding: 1.1rem 1.25rem;
+      border-radius: 14px;
+      overflow-x: auto;
+      margin: 1.25em 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88em;
+      line-height: 1.6;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .md-prose table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1.4em 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      font-size: 0.94em;
+    }
+
+    .md-prose th {
+      background: rgba(142, 142, 147, 0.12);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .md-prose td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .md-prose tr:last-child td {
+      border-bottom: none;
+    }
+
+    .md-prose a {
+      color: var(--accent-blue);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 500;
+    }
+
+    .md-prose hr {
+      border: 0;
+      border-top: 1px solid var(--border-color);
+      margin: 2em 0;
+    }
+
+    .md-prose img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 14px;
+      margin: 1.25em 0;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(142, 142, 147, 0.35);
+      border-radius: 9999px;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body, .app-surface {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .md-prose {
+        max-width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col select-none sm:select-auto">
+
+  <!-- Banner Notifikasi Auto-Update GitHub (Muncul Otomatis saat ada Commit/Versi Baru) -->
+  <div id="updateBanner" class="hidden no-print fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-xl rounded-2xl bg-gradient-to-r from-[#007AFF] to-[#5856D6] text-white px-4 py-3 shadow-2xl border border-white/20 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </span>
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-white/85">Pembaruan GitHub Tersedia</p>
+        <p id="updateBannerText" class="text-sm font-medium">Versi kode terbaru terdeteksi. Muat ulang untuk menerapkan perubahan.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button id="btnApplyUpdate" class="px-3.5 py-1.5 rounded-full bg-white text-[#007AFF] text-xs font-bold shadow hover:bg-white/90 transition">
+        PERBARUI
+      </button>
+      <button id="btnDismissUpdate" class="p-1.5 rounded-full hover:bg-white/15 text-white/80" title="Tutup">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="no-print fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Hidden File Input for Opening Local Files (.md, .txt, .json, .yaml, .csv, .log, etc.) -->
+  <input
+    type="file"
+    id="fileInputPicker"
+    multiple
+    accept=".md,.markdown,.mdown,.mkd,.mdx,.txt,.json,.yaml,.yml,.toml,.csv,.tsv,.log,.ini,.conf,.env,text/markdown,text/plain,application/json,text/csv"
+    class="hidden"
+  />
+
+  <!-- Drag & Drop Fullscreen Overlay -->
+  <div id="dropZoneOverlay" class="hidden no-print fixed inset-0 z-50 bg-[#007AFF]/15 backdrop-blur-md border-4 border-dashed border-[#007AFF] m-3 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-20 h-20 rounded-3xl bg-[#007AFF] text-white flex items-center justify-center shadow-xl mb-4">
+      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+    </div>
+    <h2 class="text-2xl font-extrabold mb-1">Lepaskan File di Sini</h2>
+    <p class="text-sub text-sm max-w-md">Mendukung file <strong>.md, .mdx, .markdown, .txt, .json, .yaml, .csv, .log</strong> untuk langsung dibuka dan disimpan ke Pustaka.</p>
+  </div>
+
+  <!-- Main Workspace Wrapper -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- macOS / iPadOS App Store Style Sidebar -->
+    <aside id="appSidebar" class="no-print hidden lg:flex flex-col w-72 shrink-0 glass-bar border-r border-subtle select-none">
+      <!-- App Brand Header with Traffic Lights -->
+      <div class="px-5 pt-5 pb-4 flex items-center justify-between border-b border-subtle">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] flex items-center justify-center text-white font-black text-lg shadow-md">
+            M↓
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-base tracking-tight">MarkFlow</span>
+              <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-[#007AFF]/15 text-[#007AFF]">PRO</span>
+            </div>
+            <p class="text-[11px] text-mute font-medium">Markdown & Text Studio</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5" title="MacBook Window Controls">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FF5F56]"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#27C93F]"></span>
+        </div>
+      </div>
+
+      <!-- Quick Action Button: Open File -->
+      <div class="p-4 space-y-2">
+        <button id="btnSidebarOpenFile" class="w-full py-2.5 px-4 rounded-xl bg-[#007AFF] hover:bg-[#0066D6] active:scale-[0.99] text-white font-semibold text-sm shadow-sm flex items-center justify-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span>Buka File (.md / .txt)</span>
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnSidebarNewDoc" class="py-2 px-3 rounded-xl app-surface hover:opacity-90 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>File Baru</span>
+          </button>
+          <button id="btnSidebarFetchUrl" class="py-2 px-3 rounded-xl app-surface hover:opacity-90 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-[#5856D6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            <span>Buka URL</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- App Store Primary Navigation -->
+      <div class="px-3 space-y-1">
+        <p class="px-3 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-mute">Menu Utama</p>
+        <button data-nav="today" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+            <span>Beranda & Galeri</span>
+          </span>
+          <span id="badgeTotalDocs" class="text-xs px-2 py-0.5 rounded-full bg-[#007AFF]/10 text-[#007AFF] font-bold">0</span>
+        </button>
+
+        <button data-nav="reader" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-[#5856D6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <span>Pembaca & Editor</span>
+          </span>
+          <span class="text-[11px] text-mute font-medium">Aktif</span>
+        </button>
+
+        <button data-nav="favorites" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-[#FF9500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span>Favorit Tersimpan</span>
+          </span>
+          <span id="badgeFavDocs" class="text-xs px-2 py-0.5 rounded-full bg-[#FF9500]/15 text-[#FF9500] font-bold">0</span>
+        </button>
+
+        <button data-nav="pwa" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-[#34C759]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>PWA & GitHub Sync</span>
+          </span>
+          <span id="sidebarSyncDot" class="w-2 h-2 rounded-full bg-[#34C759]"></span>
+        </button>
+      </div>
+
+      <!-- Recent Files List in Sidebar -->
+      <div class="px-3 mt-4 flex-1 flex flex-col min-h-0">
+        <div class="px-3 pb-1.5 flex items-center justify-between">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-mute">Daftar Dokumen</span>
+          <span class="text-[10px] text-mute">.md / .txt / .json</span>
+        </div>
+        <div id="sidebarFileList" class="flex-1 overflow-y-auto space-y-1 pr-1"></div>
+      </div>
+
+      <!-- Bottom PWA Install & Auto-Update Status Card -->
+      <div class="p-3 m-3 rounded-2xl app-surface space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#34C759] animate-pulse"></span>
+            Auto-Update Aktif
+          </span>
+          <span id="lblAppVersion" class="text-[10px] font-mono text-mute">v2.4.0</span>
+        </div>
+        <p class="text-[11px] text-sub leading-relaxed">Push kode ke GitHub akan langsung memperbarui aplikasi di HP & MacBook.</p>
+        <div class="flex gap-1.5 pt-1">
+          <button id="btnSidebarInstallPwa" class="flex-1 py-1.5 px-2.5 rounded-lg bg-[#007AFF]/12 text-[#007AFF] hover:bg-[#007AFF]/20 text-xs font-bold transition">
+            Instal Aplikasi
+          </button>
+          <button id="btnSidebarCheckUpdate" class="py-1.5 px-2.5 rounded-lg bg-gray-500/10 hover:bg-gray-500/20 text-xs font-semibold transition" title="Cek Pembaruan GitHub Sekarang">
+            Cek Update
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+      <!-- Sticky App Store Top Header -->
+      <header class="no-print glass-bar border-b border-subtle px-4 md:px-6 py-3 flex items-center justify-between gap-3 z-20 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <!-- Mobile Logo -->
+          <div class="lg:hidden w-9 h-9 rounded-xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] flex items-center justify-center text-white font-black text-sm shadow">
+            M↓
+          </div>
+          <div class="min-w-0">
+            <p id="headerSupTitle" class="text-[10px] font-bold uppercase tracking-widest text-[#007AFF]">MARKFLOW STUDIO</p>
+            <h1 id="headerTitle" class="text-base md:text-lg font-extrabold truncate">Beranda & Galeri Dokumen</h1>
+          </div>
+        </div>
+
+        <!-- Global Search Bar & Quick Controls -->
+        <div class="flex items-center gap-2">
+          <div class="relative hidden sm:block w-52 md:w-64">
+            <svg class="w-4 h-4 text-mute absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input
+              id="globalSearchInput"
+              type="text"
+              placeholder="Cari nama atau isi file..."
+              class="w-full pl-9 pr-3 py-1.5 rounded-full text-xs app-surface focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+            />
+          </div>
+
+          <button id="btnTopOpenFile" class="px-3.5 py-1.5 rounded-full bg-[#007AFF] hover:bg-[#0066D6] text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span>Buka File</span>
+          </button>
+
+          <!-- Theme Switcher Button -->
+          <button id="btnCycleTheme" class="p-2 rounded-full app-surface hover:opacity-85 transition" title="Ganti Tema (Terang / Gelap / Sepia)">
+            <span id="themeIconLabel" class="text-xs font-bold px-1">☀️ Terang</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable View Container -->
+      <main id="mainScrollArea" class="flex-1 overflow-y-auto pb-24 lg:pb-8">
+
+        <!-- ==================== VIEW 1: BERANDA & GALERI (APP STORE TODAY STYLE) ==================== -->
+        <section id="viewToday" class="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
+
+          <!-- App Store Featured Hero Banner -->
+          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#007AFF] via-[#3A59E0] to-[#5856D6] text-white p-6 md:p-8 shadow-xl">
+            <div class="relative z-10 grid md:grid-cols-12 gap-6 items-center">
+              <div class="md:col-span-8 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider">
+                  <span>✨ Aplikasi Pilihan Editor</span>
+                  <span>•</span>
+                  <span>PWA MacBook & HP</span>
+                </div>
+                <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight">
+                  Buka, Baca & Edit File Markdown dengan Gaya App Store.
+                </h2>
+                <p class="text-white/85 text-sm md:text-base max-w-2xl leading-relaxed">
+                  Tarik & lepaskan file <strong>.md, .mdx, .txt, .json, .yaml, .csv, .log</strong> langsung dari HP atau Finder MacBook Anda. Terhubung otomatis dengan repositori GitHub untuk pembaruan aplikasi instan.
+                </p>
+                <div class="pt-2 flex flex-wrap items-center gap-3">
+                  <button id="btnHeroOpenFile" class="px-5 py-2.5 rounded-full bg-white text-[#007AFF] font-extrabold text-xs md:text-sm shadow-lg hover:bg-white/95 active:scale-95 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
+                    <span>PILIH FILE DARI PERANGKAT</span>
+                  </button>
+                  <button id="btnHeroCreateNew" class="px-4 py-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold text-xs md:text-sm backdrop-blur-md transition">
+                    + Buat Catatan .MD Baru
+                  </button>
+                  <button id="btnHeroOpenUrl" class="px-4 py-2.5 rounded-full bg-black/20 hover:bg-black/30 text-white font-semibold text-xs md:text-sm backdrop-blur-md transition">
+                    Impor dari URL GitHub
+                  </button>
+                </div>
+              </div>
+
+              <!-- App Store Style Card Preview Widget -->
+              <div class="md:col-span-4 bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-white text-[#007AFF] flex items-center justify-center font-black text-xl shadow">
+                    M↓
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-extrabold text-sm truncate">MarkFlow Studio</p>
+                    <p class="text-xs text-white/75">Pembaca .MD, .TXT, .JSON, .CSV</p>
+                  </div>
+                  <button id="btnHeroInstallBadge" class="px-3.5 py-1 rounded-full bg-white text-[#007AFF] font-extrabold text-xs uppercase tracking-wide shadow">
+                    INSTAL
+                  </button>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-white/15 text-center">
+                  <div>
+                    <p class="text-[10px] uppercase text-white/70 font-bold">Format</p>
+                    <p class="text-sm font-extrabold">12+ File</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] uppercase text-white/70 font-bold">Update</p>
+                    <p class="text-sm font-extrabold">GitHub Live</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] uppercase text-white/70 font-bold">Mode</p>
+                    <p class="text-sm font-extrabold">Offline PWA</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar Mobile + Format Chips -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-[#007AFF]">PUSTAKA DOKUMEN</p>
+              <h3 class="text-xl font-extrabold tracking-tight">File Anda & Contoh Interaktif</h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5" id="categoryFilterBar">
+              <button data-filter="all" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#007AFF] text-white transition">Semua</button>
+              <button data-filter="md" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-bold app-surface text-sub transition">Markdown (.md)</button>
+              <button data-filter="code" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-bold app-surface text-sub transition">Data & Config (.json/.yaml/.csv)</button>
+              <button data-filter="txt" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-bold app-surface text-sub transition">Teks & Log (.txt)</button>
+            </div>
+          </div>
+
+          <!-- App Store Cards Grid -->
+          <div id="docCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </section>
+
+        <!-- ==================== VIEW 2: PEMBACA & EDITOR MARKDOWN ==================== -->
+        <section id="viewReader" class="hidden p-4 md:p-6 max-w-7xl mx-auto space-y-4">
+
+          <!-- Reader Control Bar (App Store Floating Pill Toolbar) -->
+          <div class="no-print app-surface rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Left: Active File Info & Title Input -->
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <button id="btnBackToLibrary" class="p-2 rounded-xl hover:bg-gray-500/10 text-[#007AFF] flex items-center gap-1 text-xs font-bold shrink-0" title="Kembali ke Galeri">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+                <span class="hidden sm:inline">Galeri</span>
+              </button>
+              <div class="min-w-0 flex-1">
+                <input
+                  id="activeDocTitleInput"
+                  type="text"
+                  class="w-full bg-transparent font-extrabold text-sm md:text-base focus:outline-none focus:ring-1 focus:ring-[#007AFF] rounded px-1.5 py-0.5 truncate"
+                  placeholder="nama-file.md"
+                />
+                <div class="flex items-center gap-3 px-1.5 text-[11px] text-mute">
+                  <span id="statWords">0 kata</span>
+                  <span>•</span>
+                  <span id="statLines">0 baris</span>
+                  <span>•</span>
+                  <span id="statReadTime">1 mnt baca</span>
+                  <span>•</span>
+                  <span id="statFileSize">0 KB</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center: View Mode Segmented Control (Baca | Split | Edit | Raw) -->
+            <div class="flex items-center bg-gray-500/10 p-1 rounded-xl">
+              <button data-mode="preview" class="mode-tab px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#007AFF] text-white">
+                📖 Baca
+              </button>
+              <button data-mode="split" class="mode-tab px-3 py-1.5 rounded-lg text-xs font-bold transition text-sub">
+                ⚡ Split
+              </button>
+              <button data-mode="edit" class="mode-tab px-3 py-1.5 rounded-lg text-xs font-bold transition text-sub">
+                ✏️ Edit
+              </button>
+              <button data-mode="raw" class="mode-tab px-3 py-1.5 rounded-lg text-xs font-bold transition text-sub">
+                🧾 Kode Asli
+              </button>
+            </div>
+
+            <!-- Right: Typography, Favorite, TOC, Download & Print -->
+            <div class="flex items-center gap-1.5">
+              <button id="btnToggleFavorite" class="p-2 rounded-xl hover:bg-gray-500/10 text-sub transition" title="Tandai Favorit">
+                <svg id="iconFavStar" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </button>
+
+              <!-- Font Size Controls -->
+              <div class="hidden sm:flex items-center bg-gray-500/10 rounded-xl p-0.5">
+                <button id="btnFontSmaller" class="px-2 py-1 text-xs font-bold hover:text-[#007AFF]" title="Perkecil Huruf">A-</button>
+                <button id="btnFontFamily" class="px-2 py-1 text-[11px] font-semibold border-x border-subtle" title="Ganti Font (Sans / Serif / Mono)">Sans</button>
+                <button id="btnFontLarger" class="px-2 py-1 text-xs font-bold hover:text-[#007AFF]" title="Perbesar Huruf">A+</button>
+              </div>
+
+              <button id="btnToggleToc" class="px-2.5 py-1.5 rounded-xl bg-gray-500/10 hover:bg-gray-500/20 text-xs font-semibold transition" title="Daftar Isi Otomatis (Outline)">
+                Daftar Isi
+              </button>
+
+              <button id="btnDownloadMd" class="px-3 py-1.5 rounded-xl bg-[#007AFF] hover:bg-[#0066D6] text-white text-xs font-bold transition flex items-center gap-1" title="Simpan / Unduh File">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span class="hidden md:inline">Unduh</span>
+              </button>
+
+              <button id="btnExportHtml" class="px-2.5 py-1.5 rounded-xl bg-gray-500/10 hover:bg-gray-500/20 text-xs font-semibold transition" title="Ekspor sebagai HTML">
+                .HTML
+              </button>
+
+              <button id="btnPrintDoc" class="hidden sm:inline-flex p-2 rounded-xl bg-gray-500/10 hover:bg-gray-500/20 text-xs font-semibold transition" title="Cetak / Simpan PDF">
+                🖨️
+              </button>
+            </div>
+          </div>
+
+          <!-- Markdown Formatting Quick Toolbar (Shown in Edit or Split Mode) -->
+          <div id="markdownToolbar" class="hidden no-print app-surface rounded-2xl px-3 py-2 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+            <span class="text-[11px] text-mute font-bold mr-1">Sisipkan Cepat:</span>
+            <button data-md-insert="# Judul Besar\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">H1</button>
+            <button data-md-insert="## Subjudul Bagian\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">H2</button>
+            <button data-md-insert="**Teks Tebal**" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10 font-bold">B</button>
+            <button data-md-insert="*Teks Miring*" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10 italic">I</button>
+            <button data-md-insert="- [x] Tugas selesai\n- [ ] Tugas berikutnya\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">☑️ Checklist</button>
+            <button data-md-insert="> Catatan penting atau kutipan di sini.\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">❝ Kutipan</button>
+            <button data-md-insert="```javascript\nconsole.log('Halo dari MarkFlow!');\n```\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10 font-mono">&lt;/&gt; Kode</button>
+            <button data-md-insert="\n| Fitur | Status | Catatan |\n| :--- | :--- | :--- |\n| PWA Offline | Aktif | Otomatis |\n| Auto-Update | Aktif | GitHub Sync |\n" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">📊 Tabel</button>
+            <button data-md-insert="[Tautan GitHub](https://github.com)" class="md-tool-btn px-2.5 py-1 rounded-lg hover:bg-gray-500/10">🔗 Link</button>
+            <div class="ml-auto flex items-center gap-2">
+              <button id="btnCopyRawContent" class="px-2.5 py-1 rounded-lg bg-[#007AFF]/12 text-[#007AFF] font-bold hover:bg-[#007AFF]/20">
+                Salin Isi File
+              </button>
+            </div>
+          </div>
+
+          <!-- Workspace Columns: Editor + Preview + Table of Contents Outline -->
+          <div class="flex flex-col lg:flex-row gap-4 items-start">
+
+            <!-- Editor Pane -->
+            <div id="paneEditor" class="hidden w-full lg:w-1/2 app-surface rounded-3xl overflow-hidden flex flex-col">
+              <div class="px-4 py-2.5 border-b border-subtle flex items-center justify-between bg-gray-500/5">
+                <span class="text-xs font-bold uppercase tracking-wider text-mute">Editor Markdown & Teks</span>
+                <span class="text-[11px] text-[#34C759] font-semibold" id="lblAutoSaveState">✓ Tersimpan otomatis</span>
+              </div>
+              <textarea
+                id="markdownTextarea"
+                rows="24"
+                class="w-full p-5 bg-transparent font-mono text-sm leading-relaxed focus:outline-none resize-y min-h-[480px]"
+                placeholder="Tulis atau tempel isi file Markdown (.md), JSON, YAML, CSV, atau teks di sini..."
+              ></textarea>
+            </div>
+
+            <!-- Rendered Preview Pane -->
+            <div id="panePreview" class="w-full flex-1 app-surface rounded-3xl p-6 md:p-10 overflow-x-auto">
+              <!-- Frontmatter Metadata Table (If YAML frontmatter is detected in .md) -->
+              <div id="frontmatterBox" class="hidden mb-6 p-4 rounded-2xl bg-[#007AFF]/5 border border-[#007AFF]/20">
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#007AFF] mb-2">Metadata Dokumen (YAML Frontmatter)</p>
+                <div id="frontmatterGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs"></div>
+              </div>
+
+              <!-- Rendered Markdown Output -->
+              <article id="markdownRendered" class="md-prose mx-auto"></article>
+            </div>
+
+            <!-- Raw Source View Pane -->
+            <div id="paneRaw" class="hidden w-full flex-1 app-surface rounded-3xl p-6 overflow-x-auto">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-subtle">
+                <span class="text-xs font-bold uppercase tracking-wider text-mute">Isi File Mentah (Raw Source)</span>
+                <button id="btnCopyRawPane" class="px-3 py-1 rounded-full bg-[#007AFF] text-white text-xs font-bold">Salin Semua</button>
+              </div>
+              <pre id="rawSourceCode" class="font-mono text-xs md:text-sm leading-relaxed whitespace-pre-wrap break-all"></pre>
+            </div>
+
+            <!-- Table of Contents (Daftar Isi) Drawer -->
+            <aside id="paneToc" class="no-print w-full lg:w-64 shrink-0 app-surface rounded-3xl p-4 space-y-3">
+              <div class="flex items-center justify-between border-b border-subtle pb-2">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#007AFF]">Daftar Isi (Outline)</h4>
+                <span id="tocCountBadge" class="text-[11px] font-bold text-mute">0 bagian</span>
+              </div>
+              <nav id="tocListContainer" class="space-y-1 max-h-[420px] overflow-y-auto text-xs"></nav>
+            </aside>
+
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: FAVORIT TERSIMPAN ==================== -->
+        <section id="viewFavorites" class="hidden p-4 md:p-8 max-w-6xl mx-auto space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-[#FF9500]">KOLEKSI PILIHAN</p>
+              <h2 class="text-2xl font-extrabold">Dokumen Favorit Anda</h2>
+            </div>
+            <button id="btnFavOpenNew" class="px-4 py-2 rounded-full bg-[#007AFF] text-white text-xs font-bold">
+              + Buka File Baru
+            </button>
+          </div>
+          <div id="favCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </section>
+
+        <!-- ==================== VIEW 4: PUSAT PWA, GITHUB AUTO-UPDATE & INSTALASI ==================== -->
+        <section id="viewPwa" class="hidden p-4 md:p-8 max-w-5xl mx-auto space-y-6">
+          <div class="app-surface rounded-3xl p-6 md:p-8 space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-subtle pb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] flex items-center justify-center text-white font-black text-2xl shadow-md shrink-0">M↓</div>
+                <div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-[#34C759]/15 text-[#34C759] text-xs font-extrabold">PWA SIAP DIINSTAL</span>
+                  <h2 class="text-2xl font-extrabold mt-1">Pusat Instalasi & Auto-Update GitHub</h2>
+                  <p class="text-sub text-sm">Status sinkronisasi Service Worker (`sw.js`) & Manifest (`manifest.json`).</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="btnPwaForceCheck" class="px-4 py-2.5 rounded-full bg-[#007AFF] hover:bg-[#0066D6] text-white text-xs font-extrabold shadow transition">
+                  🔄 Cek & Tarik Update GitHub Sekarang
+                </button>
+                <button id="btnPwaTriggerInstall" class="px-4 py-2.5 rounded-full bg-[#5856D6] hover:opacity-95 text-white text-xs font-extrabold shadow transition">
+                  📲 Instal ke HP / MacBook
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Telemetry Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 rounded-2xl bg-gray-500/5 border border-subtle">
+                <p class="text-[11px] font-bold uppercase text-mute">Status Service Worker</p>
+                <p id="pwaSwStatusText" class="text-base font-extrabold text-[#34C759] mt-1">Aktif (Network-First)</p>
+                <p class="text-xs text-sub mt-0.5">Mendukung offline & bypass cache saat online.</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-gray-500/5 border border-subtle">
+                <p class="text-[11px] font-bold uppercase text-mute">Pengecekan Terakhir</p>
+                <p id="pwaLastCheckText" class="text-base font-extrabold mt-1">Baru saja</p>
+                <p class="text-xs text-sub mt-0.5">Otomatis dicek saat aplikasi dibuka/fokus.</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-gray-500/5 border border-subtle">
+                <p class="text-[11px] font-bold uppercase text-mute">Struktur Repositori GitHub</p>
+                <p class="text-base font-extrabold text-[#007AFF] mt-1">5 File Inti Siap</p>
+                <p class="text-xs text-sub mt-0.5">index.html, sw.js, manifest.json, icon192px, icon512px</p>
+              </div>
+            </div>
+
+            <!-- Step-by-step Guide for GitHub Pages + MacBook + HP -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+              <div class="p-5 rounded-2xl border border-subtle space-y-2.5">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                  <span>💻</span> Cara Instal di MacBook (macOS)
+                </h3>
+                <ol class="text-xs text-sub space-y-2 list-decimal pl-4 leading-relaxed">
+                  <li>Buka URL GitHub Pages Anda di <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, atau <strong>Safari (macOS Sonoma+)</strong>.</li>
+                  <li>Di Chrome/Edge: klik ikon <strong>Instal MarkFlow</strong> di sisi kanan address bar atau klik tombol <strong>Instal Aplikasi</strong> di pojok kiri bawah.</li>
+                  <li>Di Safari MacBook: klik menu <strong>File → Add to Dock (Tambahkan ke Dock)</strong>.</li>
+                  <li>Aplikasi akan tampil di Dock & Launchpad MacBook layaknya aplikasi native App Store, dan mampu membuka file <code>.md</code> langsung dari Finder.</li>
+                </ol>
+              </div>
+
+              <div class="p-5 rounded-2xl border border-subtle space-y-2.5">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                  <span>📱</span> Cara Instal di HP (iPhone & Android)
+                </h3>
+                <ol class="text-xs text-sub space-y-2 list-decimal pl-4 leading-relaxed">
+                  <li><strong>Android (Chrome):</strong> Ketuk tombol <strong>Instal Aplikasi</strong> atau buka menu titik tiga ⋮ lalu pilih <strong>Instal aplikasi / Tambahkan ke Layar Utama</strong>.</li>
+                  <li><strong>iPhone / iPad (Safari):</strong> Ketuk tombol <strong>Bagikan (Share)</strong> di bagian bawah layar, lalu pilih <strong>Tambah ke Layar Utama (Add to Home Screen)</strong>.</li>
+                  <li>Setiap kali Anda mengedit <code>index.html</code> di GitHub, aplikasi yang sudah terinstal di HP & MacBook akan otomatis mengunduh kodingan terbaru saat terkoneksi internet.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Mobile Bottom Navigation Bar (iOS App Store Style Tab Bar) -->
+      <nav class="no-print lg:hidden fixed bottom-0 inset-x-0 z-30 glass-bar border-t border-subtle px-2 py-1.5 flex items-center justify-around">
+        <button data-nav="today" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          <span>Beranda</span>
+        </button>
+        <button data-nav="reader" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span>Pembaca</span>
+        </button>
+        <button id="btnMobileQuickOpen" class="flex flex-col items-center justify-center -mt-4 w-12 h-12 rounded-2xl bg-[#007AFF] text-white shadow-lg">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <button data-nav="favorites" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          <span>Favorit</span>
+        </button>
+        <button data-nav="pwa" class="nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Update</span>
+        </button>
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- Modal: Impor File Markdown dari URL / Raw GitHub -->
+  <div id="modalFetchUrl" class="hidden no-print fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="app-surface w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-extrabold">Impor File dari URL / GitHub Raw</h3>
+        <button id="btnCloseUrlModal" class="p-1.5 rounded-full hover:bg-gray-500/10">✕</button>
+      </div>
+      <p class="text-xs text-sub leading-relaxed">
+        Masukkan tautan URL file <code>.md</code>, <code>.txt</code>, atau <code>.json</code> (misalnya tautan <em>raw.githubusercontent.com</em>) untuk langsung dibuka di dalam aplikasi.
+      </p>
+      <input
+        id="inputRemoteUrl"
+        type="url"
+        placeholder="https://raw.githubusercontent.com/username/repo/main/README.md"
+        class="w-full px-4 py-2.5 rounded-xl app-surface text-sm focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+      />
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button id="btnCancelUrlModal" class="px-4 py-2 rounded-full text-xs font-bold hover:bg-gray-500/10">Batal</button>
+        <button id="btnConfirmFetchUrl" class="px-5 py-2 rounded-full bg-[#007AFF] text-white text-xs font-extrabold shadow">Muat Dokumen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Panduan Instalasi Manual PWA (Jika Browser Tidak Menampilkan Prompt Otomatis, mis. Safari iOS/macOS) -->
+  <div id="modalInstallGuide" class="hidden no-print fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="app-surface w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] text-white flex items-center justify-center font-black">M↓</div>
+          <div>
+            <h3 class="text-base font-extrabold">Instal MarkFlow Studio</h3>
+            <p class="text-xs text-mute">PWA untuk HP & MacBook</p>
+          </div>
+        </div>
+        <button id="btnCloseInstallModal" class="p-1.5 rounded-full hover:bg-gray-500/10">✕</button>
+      </div>
+      <div class="text-xs text-sub space-y-2.5 leading-relaxed">
+        <p class="p-3 rounded-2xl bg-[#007AFF]/10 text-[#007AFF] font-semibold">
+          💡 Ikuti langkah singkat sesuai perangkat yang Anda gunakan:
+        </p>
+        <p><strong>📱 Di iPhone / iPad (Safari):</strong> Ketuk ikon <strong>Share (Bagikan)</strong> di bilah bawah browser, lalu pilih <strong>"Add to Home Screen" (Tambah ke Layar Utama)</strong>.</p>
+        <p><strong>💻 Di MacBook (Safari / Chrome):</strong> Di Safari pilih menu <strong>File → Add to Dock</strong>. Di Chrome klik ikon <strong>Instal</strong> di sisi kanan kolom URL.</p>
+        <p><strong>🤖 Di Android (Chrome):</strong> Ketuk menu titik tiga <strong>⋮</strong> di pojok kanan atas lalu pilih <strong>"Instal aplikasi"</strong>.</p>
+      </div>
+      <div class="flex justify-end pt-2">
+        <button id="btnOkInstallModal" class="px-5 py-2 rounded-full bg-[#007AFF] text-white text-xs font-extrabold">Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. DEFAULT DOCUMENTS (Agar aplikasi langsung kaya fitur saat pertama dibuka)
+      // =========================================================================
+      const DEFAULT_DOCS = [
+        {
+          id: 'doc-welcome-guide',
+          name: 'README-Panduan-MarkFlow.md',
+          ext: 'md',
+          category: 'md',
+          favorite: true,
+          updatedAt: 'Baru saja',
+          subtitle: 'Panduan Lengkap Fitur & Auto-Update GitHub',
+          badge: 'PANDUAN UTAMA',
+          accent: 'from-[#007AFF] to-[#5856D6]',
+          content: `---
+title: MarkFlow Studio PWA
+version: 2.4.0
+platform: iOS, Android, macOS (MacBook)
+auto_update: GitHub Live Network-First
+---
+
+# Selamat Datang di MarkFlow Studio 👋
+
+**MarkFlow Studio** adalah aplikasi pembaca dan editor file **Markdown (\`.md\`, \`.mdx\`)** serta file teks teknis (\`.txt\`, \`.json\`, \`.yaml\`, \`.csv\`, \`.log\`) dengan antarmuka bergaya **Apple App Store**.
+
+## 🚀 Fitur Unggulan Aplikasi
+
+- [x] **Pembaca Multi-Format**: Buka file \`.md\`, \`.markdown\`, \`.mdx\`, \`.txt\`, \`.json\`, \`.yaml\`, \`.csv\`, dan \`.log\`.
+- [x] **Sistem Auto-Update GitHub Real-Time**: Setiap kali Anda mengubah kode di repositori GitHub, aplikasi yang sudah diinstal di HP maupun MacBook akan **otomatis memperbarui dirinya** tanpa perlu instal ulang.
+- [x] **4 Mode Tampilan**: Mode **Baca**, **Split Screen** (berdampingan), **Edit**, dan **Kode Asli (Raw)**.
+- [x] **Daftar Isi Otomatis (Outline)**: Navigasi cepat antar-heading \`H1\` hingga \`H4\`.
+- [x] **3 Tema Nyaman**: Tema **Terang (App Store Light)**, **Gelap (OLED Dark)**, dan **Sepia (Mode Baca Buku)**.
+
+---
+
+## 🔄 Bagaimana Cara Kerja Auto-Update GitHub?
+
+Aplikasi ini dilengkapi \`sw.js\` (*Service Worker*) dengan algoritma **Network-First + Bypass HTTP Cache (\`cache: 'no-store'\`)** serta pemantau perubahan tanda tangan file (*ETag / Content Hash*):
+
+1. Saat aplikasi dibuka di **HP** atau **MacBook**, aplikasi langsung mengecek versi terbaru \`index.html\` dan \`sw.js\` di server GitHub Pages Anda.
+2. Jika Anda baru saja melakukan \`git push\` atau mengedit file di GitHub, Service Worker akan langsung mengunduh file terbaru, menjalankan \`skipWaiting()\`, dan menampilkan pita pembaruan instan.
+3. Saat perangkat tidak memiliki sinyal internet (*offline*), aplikasi otomatis beralih menggunakan salinan terakhir dari *Cache Storage*.
+
+---
+
+## 💻 Contoh Blok Kode dengan Syntax Highlighting
+
+\`\`\`javascript
+// Contoh pengecekan otomatis perubahan kode di GitHub Pages
+async function verifyGitHubDeployment() {
+  const response = await fetch(window.location.href, { cache: 'no-store' });
+  console.log('Status sinkronisasi GitHub:', response.status);
+}
+verifyGitHubDeployment();
+\`\`\`
+
+## 📊 Perbandingan Format yang Didukung
+
+| Ekstensi File | Mode Pratinjau | Dukungan Edit & Unduh |
+| :--- | :--- | :--- |
+| \`.md\`, \`.markdown\`, \`.mdx\` | Render GFM + Daftar Isi + Highlight | ✅ Penuh |
+| \`.json\`, \`.yaml\`, \`.yml\` | Blok Kode Berwarna + Format Rapi | ✅ Penuh |
+| \`.csv\`, \`.tsv\` | Tabel Interaktif Otomatis | ✅ Penuh |
+| \`.txt\`, \`.log\`, \`.ini\` | Pembaca Teks Bersih | ✅ Penuh |
+
+> **Tips Cepat:** Anda bisa langsung menarik (*Drag & Drop*) file \`.md\` dari Finder MacBook ke jendela aplikasi ini!`
+        },
+        {
+          id: 'doc-architecture-notes',
+          name: 'Catatan-Arsitektur-Proyek.md',
+          ext: 'md',
+          category: 'md',
+          favorite: true,
+          updatedAt: 'Hari ini',
+          subtitle: 'Contoh Dokumen Spesifikasi Teknis & Checklist',
+          badge: 'ARSITEKTUR',
+          accent: 'from-[#34C759] to-[#007AFF]',
+          content: `---
+project: Upload GitHub Pages PWA
+author: Full-Stack Developer
+status: Production Ready
+---
+
+# Struktur File Repositori GitHub
+
+Pastikan kelima file berikut berada di dalam folder utama (*root directory*) repositori GitHub Anda:
+
+1. \`index.html\` — Aplikasi utama pembaca & editor Markdown bergaya App Store.
+2. \`sw.js\` — Service Worker dengan sistem **Auto-Update Network-First**.
+3. \`manifest.json\` — Konfigurasi instalasi PWA untuk HP & MacBook beserta *File Handling API*.
+4. \`icon192px.png\` (dan alias \`icon192px\`) — Ikon aplikasi resolusi 192×192 piksel.
+5. \`icon512px.png\` (dan alias \`icon512px\`) — Ikon aplikasi resolusi 512×512 piksel.
+
+## Daftar Periksa Deployment GitHub Pages
+
+- [x] Buat repositori baru di GitHub.
+- [x] Upload kelima file ke cabang \`main\`.
+- [x] Buka **Settings → Pages** di GitHub, lalu pilih **Deploy from a branch (\`main\` / \`root\`)**.
+- [x] Buka tautan GitHub Pages di Safari/Chrome HP dan MacBook untuk menginstal aplikasi.`
+        },
+        {
+          id: 'doc-sample-csv',
+          name: 'Jadwal-Rilis-Fitur.csv',
+          ext: 'csv',
+          category: 'code',
+          favorite: false,
+          updatedAt: 'Kemarin',
+          subtitle: 'Contoh File CSV yang Dirender Otomatis Menjadi Tabel',
+          badge: 'TABEL CSV',
+          accent: 'from-[#FF9500] to-[#FF2D55]',
+          content: `Versi,Tanggal Rilis,Fitur Utama,Platform,Status
+v2.1.0,2026-09-10,Pembaca Markdown Dasar,Web & Mobile,Selesai
+v2.2.0,2026-10-01,Editor Split-Screen & TOC,MacBook & iPad,Selesai
+v2.3.0,2026-10-20,Dukungan CSV & JSON Viewer,Semua Perangkat,Selesai
+v2.4.0,2026-11-12,Auto-Update GitHub PWA & App Store UI,iOS / Android / macOS,Aktif`
+        },
+        {
+          id: 'doc-sample-json',
+          name: 'package-config.json',
+          ext: 'json',
+          category: 'code',
+          favorite: false,
+          updatedAt: '2 hari lalu',
+          subtitle: 'Contoh File Konfigurasi JSON dengan Syntax Highlight',
+          badge: 'KONFIGURASI JSON',
+          accent: 'from-[#5856D6] to-[#AF52DE]',
+          content: `{
+  "appName": "MarkFlow Studio PWA",
+  "version": "2.4.0",
+  "githubAutoUpdate": {
+    "strategy": "Network-First (cache: no-store)",
+    "checkIntervalSeconds": 45,
+    "instantSkipWaiting": true
+  },
+  "supportedExtensions": [
+    ".md",
+    ".markdown",
+    ".mdx",
+    ".txt",
+    ".json",
+    ".yaml",
+    ".csv",
+    ".log"
+  ]
+}`
+        }
+      ];
+
+      // =========================================================================
+      // 2. APPLICATION STATE & SAFE LOCALSTORAGE PERSISTENCE
+      // =========================================================================
+      const STORAGE_KEY_DOCS = 'markflow_docs_v2';
+      const STORAGE_KEY_PREFS = 'markflow_prefs_v2';
+
+      let state = {
+        docs: [],
+        activeDocId: 'doc-welcome-guide',
+        currentView: 'today', // 'today' | 'reader' | 'favorites' | 'pwa'
+        readerMode: 'preview', // 'preview' | 'split' | 'edit' | 'raw'
+        categoryFilter: 'all',
+        searchQuery: '',
+        theme: 'light', // 'light' | 'dark' | 'sepia'
+        fontSize: 16,
+        fontFamilyIndex: 0, // 0: Sans, 1: Serif, 2: Mono
+        showToc: true,
+        deferredInstallPrompt: null,
+        initialIndexSignature: null
+      };
+
+      const FONT_FAMILIES = [
+        { label: 'Sans', css: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" },
+        { label: 'Serif', css: "'Newsreader', Georgia, serif" },
+        { label: 'Mono', css: "'JetBrains Mono', monospace" }
+      ];
+
+      function loadState() {
+        try {
+          const savedDocs = localStorage.getItem(STORAGE_KEY_DOCS);
+          if (savedDocs) {
+            const parsed = JSON.parse(savedDocs);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              state.docs = parsed;
+            }
+          }
+          if (!state.docs || state.docs.length === 0) {
+            state.docs = JSON.parse(JSON.stringify(DEFAULT_DOCS));
+          }
+
+          const savedPrefs = localStorage.getItem(STORAGE_KEY_PREFS);
+          if (savedPrefs) {
+            const prefs = JSON.parse(savedPrefs);
+            if (prefs.theme) state.theme = prefs.theme;
+            if (prefs.fontSize) state.fontSize = prefs.fontSize;
+            if (typeof prefs.fontFamilyIndex === 'number') state.fontFamilyIndex = prefs.fontFamilyIndex;
+            if (typeof prefs.showToc === 'boolean') state.showToc = prefs.showToc;
+            if (prefs.activeDocId && state.docs.some(d => d.id === prefs.activeDocId)) {
+              state.activeDocId = prefs.activeDocId;
+            }
+          }
+        } catch (err) {
+          state.docs = JSON.parse(JSON.stringify(DEFAULT_DOCS));
+        }
+      }
+
+      function saveDocs() {
+        try {
+          localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(state.docs));
+        } catch (err) {
+          // Ignore quota/sandbox error
+        }
+      }
+
+      function savePrefs() {
+        try {
+          localStorage.setItem(STORAGE_KEY_PREFS, JSON.stringify({
+            theme: state.theme,
+            fontSize: state.fontSize,
+            fontFamilyIndex: state.fontFamilyIndex,
+            showToc: state.showToc,
+            activeDocId: state.activeDocId
+          }));
+        } catch (err) {
+          // Ignore sandbox error
+        }
+      }
+
+      // =========================================================================
+      // 3. UI HELPERS & TOAST NOTIFICATIONS
+      // =========================================================================
+      function showToast(message, badgeText) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#1C1C1E] text-white text-xs font-semibold shadow-xl border border-white/10 transition-all duration-300';
+        toast.innerHTML = `
+          <span class="px-2 py-0.5 rounded-md bg-[#007AFF] text-[10px] font-extrabold uppercase">${badgeText || 'INFO'}</span>
+          <span>${escapeHtml(message)}</span>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          setTimeout(() => toast.remove(), 280);
+        }, 3200);
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function getActiveDoc() {
+        return state.docs.find(d => d.id === state.activeDocId) || state.docs[0];
+      }
+
+      function detectCategory(filename) {
+        const ext = (filename.split('.').pop() || 'md').toLowerCase();
+        if (['md', 'markdown', 'mdown', 'mkd', 'mdx'].includes(ext)) return { ext, category: 'md', badge: 'MARKDOWN' };
+        if (['json', 'yaml', 'yml', 'toml', 'csv', 'tsv'].includes(ext)) return { ext, category: 'code', badge: ext.toUpperCase() };
+        return { ext, category: 'txt', badge: 'TEKS / LOG' };
+      }
+
+      // =========================================================================
+      // 4. MARKDOWN, FRONTMATTER, CSV & CODE RENDERER
+      // =========================================================================
+      function parseFrontmatter(rawText) {
+        const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/.exec(rawText);
+        if (!match) return { meta: null, body: rawText };
+        const yamlLines = match[1].split(/\r?\n/);
+        const meta = {};
+        yamlLines.forEach(line => {
+          const idx = line.indexOf(':');
+          if (idx > 0) {
+            const key = line.slice(0, idx).trim();
+            const val = line.slice(idx + 1).trim();
+            if (key && val) meta[key] = val;
+          }
+        });
+        return { meta: Object.keys(meta).length ? meta : null, body: match[2] };
+      }
+
+      function csvToMarkdownTable(csvText, delimiter) {
+        const sep = delimiter || ',';
+        const lines = csvText.trim().split(/\r?\n/).filter(Boolean);
+        if (lines.length === 0) return '*(File CSV kosong)*';
+        const rows = lines.map(line => line.split(sep).map(cell => cell.trim()));
+        const headers = rows[0];
+        const alignRow = headers.map(() => ':---');
+        const bodyRows = rows.slice(1);
+        const mdLines = [
+          '| ' + headers.join(' | ') + ' |',
+          '| ' + alignRow.join(' | ') + ' |',
+          ...bodyRows.map(r => '| ' + headers.map((_, i) => r[i] || '').join(' | ') + ' |')
+        ];
+        return mdLines.join('\n');
+      }
+
+      function renderActiveDocument() {
+        const doc = getActiveDoc();
+        if (!doc) return;
+
+        // Update Title Input & Statistics
+        const titleInput = document.getElementById('activeDocTitleInput');
+        if (titleInput && document.activeElement !== titleInput) {
+          titleInput.value = doc.name;
+        }
+
+        const textarea = document.getElementById('markdownTextarea');
+        if (textarea && document.activeElement !== textarea) {
+          textarea.value = doc.content;
+        }
+
+        const rawCode = document.getElementById('rawSourceCode');
+        if (rawCode) {
+          rawCode.textContent = doc.content;
+        }
+
+        // Compute document stats
+        const contentStr = String(doc.content || '');
+        const words = contentStr.trim() ? contentStr.trim().split(/\s+/).length : 0;
+        const lines = contentStr.split(/\r?\n/).length;
+        const readMins = Math.max(1, Math.ceil(words / 200));
+        const sizeKb = (new Blob([contentStr]).size / 1024).toFixed(1);
+
+        document.getElementById('statWords').textContent = `${words} kata`;
+        document.getElementById('statLines').textContent = `${lines} baris`;
+        document.getElementById('statReadTime').textContent = `${readMins} mnt baca`;
+        document.getElementById('statFileSize').textContent = `${sizeKb} KB`;
+
+        // Update Favorite Star
+        const iconFav = document.getElementById('iconFavStar');
+        if (iconFav) {
+          if (doc.favorite) {
+            iconFav.setAttribute('fill', '#FF9500');
+            iconFav.setAttribute('stroke', '#FF9500');
+          } else {
+            iconFav.setAttribute('fill', 'none');
+            iconFav.setAttribute('stroke', 'currentColor');
+          }
+        }
+
+        // Parse Frontmatter & Format-Specific Content
+        const frontmatterBox = document.getElementById('frontmatterBox');
+        const frontmatterGrid = document.getElementById('frontmatterGrid');
+        const renderedEl = document.getElementById('markdownRendered');
+
+        let markdownToRender = contentStr;
+        const ext = (doc.ext || doc.name.split('.').pop() || 'md').toLowerCase();
+
+        if (['md', 'markdown', 'mdown', 'mkd', 'mdx'].includes(ext)) {
+          const parsed = parseFrontmatter(contentStr);
+          markdownToRender = parsed.body;
+          if (parsed.meta) {
+            frontmatterBox.classList.remove('hidden');
+            frontmatterGrid.innerHTML = Object.entries(parsed.meta).map(([k, v]) => `
+              <div class="p-2 rounded-xl bg-white/60 dark:bg-black/20 border border-subtle">
+                <span class="block text-[10px] font-bold uppercase text-mute">${escapeHtml(k)}</span>
+                <span class="font-semibold text-xs">${escapeHtml(v)}</span>
+              </div>
+            `).join('');
+          } else {
+            frontmatterBox.classList.add('hidden');
+          }
+        } else {
+          frontmatterBox.classList.add('hidden');
+          if (ext === 'csv' || ext === 'tsv') {
+            const sep = ext === 'tsv' ? '\t' : ',';
+            markdownToRender = `### Pratinjau Tabel (\`${escapeHtml(doc.name)}\`)\n\n` + csvToMarkdownTable(contentStr, sep);
+          } else if (['json', 'yaml', 'yml', 'toml', 'ini', 'conf', 'env'].includes(ext)) {
+            markdownToRender = '```' + (ext === 'yml' ? 'yaml' : ext) + '\n' + contentStr + '\n```';
+          } else {
+            markdownToRender = '```plaintext\n' + contentStr + '\n```';
+          }
+        }
+
+        // Render Markdown via Marked.js
+        if (window.marked) {
+          marked.setOptions({
+            gfm: true,
+            breaks: true
+          });
+          renderedEl.innerHTML = marked.parse(markdownToRender);
+        } else {
+          renderedEl.innerHTML = `<pre>${escapeHtml(markdownToRender)}</pre>`;
+        }
+
+        // Syntax Highlighting via Highlight.js + Add Copy Buttons on Code Blocks
+        renderedEl.querySelectorAll('pre code').forEach((block) => {
+          if (window.hljs) {
+            try { hljs.highlightElement(block); } catch (e) {}
+          }
+          const pre = block.parentElement;
+          if (pre && !pre.querySelector('.copy-code-btn')) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'copy-code-btn absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-sans font-bold text-white/90 transition';
+            btn.textContent = 'Salin Kode';
+            btn.addEventListener('click', () => {
+              copyTextToClipboard(block.textContent || '');
+              btn.textContent = '✓ Tersalin';
+              setTimeout(() => { btn.textContent = 'Salin Kode'; }, 1800);
+            });
+            pre.appendChild(btn);
+          }
+        });
+
+        // Interactive Checkboxes inside Rendered Markdown
+        const checkboxes = renderedEl.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((cb, idx) => {
+          cb.removeAttribute('disabled');
+          cb.addEventListener('change', () => {
+            let occurrence = -1;
+            doc.content = doc.content.replace(/^(\s*[-*+]\s+\[)([ xX])(\])/gm, (full, p1, stateChar, p3) => {
+              occurrence++;
+              if (occurrence === idx) {
+                return p1 + (cb.checked ? 'x' : ' ') + p3;
+              }
+              return full;
+            });
+            saveDocs();
+            renderActiveDocument();
+            showToast(cb.checked ? 'Item checklist ditandai selesai' : 'Item checklist dibuka kembali', 'CHECKLIST');
+          });
+        });
+
+        // Build Automatic Table of Contents (Outline)
+        buildTableOfContents(renderedEl);
+      }
+
+      function buildTableOfContents(renderedEl) {
+        const tocContainer = document.getElementById('tocListContainer');
+        const tocBadge = document.getElementById('tocCountBadge');
+        if (!tocContainer) return;
+
+        const headings = Array.from(renderedEl.querySelectorAll('h1, h2, h3, h4'));
+        tocBadge.textContent = `${headings.length} bagian`;
+
+        if (headings.length === 0) {
+          tocContainer.innerHTML = `<p class="text-mute text-xs py-2">Tidak ada subjudul (H1–H4) pada dokumen ini.</p>`;
+          return;
+        }
+
+        tocContainer.innerHTML = '';
+        headings.forEach((h, index) => {
+          const id = 'md-heading-' + index;
+          h.id = id;
+          const level = parseInt(h.tagName.replace('H', ''), 10) || 1;
+          const indentClass = level === 1 ? 'pl-2 font-bold' : level === 2 ? 'pl-4 font-semibold' : 'pl-7 text-sub';
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-full text-left py-1.5 pr-2 rounded-lg hover:bg-[#007AFF]/10 hover:text-[#007AFF] truncate transition ${indentClass}`;
+          btn.textContent = h.textContent;
+          btn.addEventListener('click', () => {
+            h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          tocContainer.appendChild(btn);
+        });
+      }
+
+      // =========================================================================
+      // 5. RENDER LIBRARY CARDS & SIDEBAR LIST
+      // =========================================================================
+      function renderAllLists() {
+        const query = state.searchQuery.trim().toLowerCase();
+
+        const filteredDocs = state.docs.filter(doc => {
+          const matchesCat = state.categoryFilter === 'all' || doc.category === state.categoryFilter;
+          const matchesSearch = !query ||
+            doc.name.toLowerCase().includes(query) ||
+            (doc.content && doc.content.toLowerCase().includes(query)) ||
+            (doc.subtitle && doc.subtitle.toLowerCase().includes(query));
+          return matchesCat && matchesSearch;
+        });
+
+        // Update Badges
+        document.getElementById('badgeTotalDocs').textContent = String(state.docs.length);
+        const favDocs = state.docs.filter(d => d.favorite);
+        document.getElementById('badgeFavDocs').textContent = String(favDocs.length);
+
+        // 1. Sidebar File List
+        const sidebarList = document.getElementById('sidebarFileList');
+        if (sidebarList) {
+          sidebarList.innerHTML = state.docs.map(doc => {
+            const isActive = doc.id === state.activeDocId;
+            return `
+              <div data-open-doc="${escapeHtml(doc.id)}" class="cursor-pointer group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${isActive ? 'bg-[#007AFF] text-white shadow-sm' : 'hover:bg-gray-500/10'}">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-sm">${doc.category === 'code' ? '🧩' : doc.category === 'txt' ? '📄' : '📘'}</span>
+                  <span class="truncate">${escapeHtml(doc.name)}</span>
+                </div>
+                <span class="text-[10px] ${isActive ? 'text-white/80' : 'text-mute'} uppercase ml-2 shrink-0">.${escapeHtml(doc.ext || 'md')}</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // 2. App Store Cards Grid (Today View)
+        const grid = document.getElementById('docCardsGrid');
+        if (grid) {
+          if (filteredDocs.length === 0) {
+            grid.innerHTML = `
+              <div class="col-span-full app-surface rounded-3xl p-10 text-center space-y-3">
+                <p class="text-base font-extrabold">Tidak ada dokumen yang cocok dengan pencarian</p>
+                <p class="text-xs text-sub">Coba kata kunci lain atau buka file baru dari perangkat Anda.</p>
+              </div>
+            `;
+          } else {
+            grid.innerHTML = filteredDocs.map(doc => createAppStoreCardHtml(doc)).join('');
+          }
+        }
+
+        // 3. Favorites Grid
+        const favGrid = document.getElementById('favCardsGrid');
+        if (favGrid) {
+          if (favDocs.length === 0) {
+            favGrid.innerHTML = `
+              <div class="col-span-full app-surface rounded-3xl p-10 text-center space-y-3">
+                <p class="text-base font-extrabold">Belum ada dokumen favorit</p>
+                <p class="text-xs text-sub">Ketuk ikon bintang ⭐ pada dokumen untuk menyimpannya di tab Favorit.</p>
+              </div>
+            `;
+          } else {
+            favGrid.innerHTML = favDocs.map(doc => createAppStoreCardHtml(doc)).join('');
+          }
+        }
+      }
+
+      function createAppStoreCardHtml(doc) {
+        const snippet = String(doc.content || '')
+          .replace(/^---[\s\S]*?---/, '')
+          .replace(/[#*`>_~\[\]]/g, '')
+          .trim()
+          .slice(0, 140);
+        const words = String(doc.content || '').trim().split(/\s+/).filter(Boolean).length;
+        const accent = doc.accent || 'from-[#007AFF] to-[#5856D6]';
+
+        return `
+          <div class="app-surface rounded-3xl overflow-hidden flex flex-col justify-between transition hover:-translate-y-0.5">
+            <div>
+              <!-- Card Top Gradient Header -->
+              <div class="bg-gradient-to-r ${accent} p-4 text-white flex items-center justify-between">
+                <span class="px-2.5 py-0.5 rounded-full bg-black/25 text-[10px] font-extrabold uppercase tracking-wider">
+                  ${escapeHtml(doc.badge || doc.ext.toUpperCase())}
+                </span>
+                <div class="flex items-center gap-1">
+                  <button data-fav-doc="${escapeHtml(doc.id)}" class="p-1.5 rounded-full bg-white/15 hover:bg-white/25 text-xs" title="Favorit">
+                    ${doc.favorite ? '⭐' : '☆'}
+                  </button>
+                  <button data-del-doc="${escapeHtml(doc.id)}" class="p-1.5 rounded-full bg-white/15 hover:bg-red-500/80 text-xs" title="Hapus dari Pustaka">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card Body -->
+              <div class="p-5 space-y-2">
+                <h4 class="font-extrabold text-base truncate" title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</h4>
+                <p class="text-xs font-semibold text-[#007AFF]">${escapeHtml(doc.subtitle || 'Dokumen Markdown & Teks')}</p>
+                <p class="text-xs text-sub line-clamp-3 leading-relaxed">${escapeHtml(snippet || 'Dokumen kosong.')}</p>
+              </div>
+            </div>
+
+            <!-- App Store Get/Open Bottom Row -->
+            <div class="px-5 py-3.5 border-t border-subtle flex items-center justify-between bg-gray-500/5">
+              <div class="text-[11px] text-mute font-medium">
+                <span>${words} kata</span> • <span>${escapeHtml(doc.updatedAt || 'Tersimpan')}</span>
+              </div>
+              <button data-open-doc="${escapeHtml(doc.id)}" class="px-4 py-1.5 rounded-full bg-[#007AFF]/12 hover:bg-[#007AFF] text-[#007AFF] hover:text-white font-extrabold text-xs uppercase tracking-wide transition">
+                BUKA
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // =========================================================================
+      // 6. VIEW NAVIGATION, MODES & TYPOGRAPHY CONTROLS
+      // =========================================================================
+      function switchView(viewName) {
+        state.currentView = viewName;
+        const views = {
+          today: document.getElementById('viewToday'),
+          reader: document.getElementById('viewReader'),
+          favorites: document.getElementById('viewFavorites'),
+          pwa: document.getElementById('viewPwa')
+        };
+
+        Object.entries(views).forEach(([k, el]) => {
+          if (el) el.classList.toggle('hidden', k !== viewName);
+        });
+
+        const titles = {
+          today: ['MARKFLOW STUDIO', 'Beranda & Galeri Dokumen'],
+          reader: ['PEMBACA & EDITOR', (getActiveDoc() ? getActiveDoc().name : 'Dokumen Markdown')],
+          favorites: ['KOLEKSI PILIHAN', 'Dokumen Favorit Tersimpan'],
+          pwa: ['GITHUB AUTO-UPDATE', 'Pengaturan PWA & Sinkronisasi']
+        };
+
+        const [sup, main] = titles[viewName] || titles.today;
+        document.getElementById('headerSupTitle').textContent = sup;
+        document.getElementById('headerTitle').textContent = main;
+
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          const isMatch = btn.getAttribute('data-nav') === viewName;
+          btn.classList.toggle('bg-[#007AFF]/12', isMatch);
+          btn.classList.toggle('text-[#007AFF]', isMatch);
+        });
+
+        if (viewName === 'reader') {
+          renderActiveDocument();
+          applyReaderMode(state.readerMode);
+        } else {
+          renderAllLists();
+        }
+      }
+
+      function applyReaderMode(mode) {
+        state.readerMode = mode;
+        const paneEditor = document.getElementById('paneEditor');
+        const panePreview = document.getElementById('panePreview');
+        const paneRaw = document.getElementById('paneRaw');
+        const toolbar = document.getElementById('markdownToolbar');
+
+        paneEditor.classList.add('hidden');
+        panePreview.classList.add('hidden');
+        paneRaw.classList.add('hidden');
+        toolbar.classList.add('hidden');
+
+        paneEditor.classList.remove('lg:w-1/2');
+
+        if (mode === 'preview') {
+          panePreview.classList.remove('hidden');
+        } else if (mode === 'split') {
+          paneEditor.classList.remove('hidden');
+          paneEditor.classList.add('lg:w-1/2');
+          panePreview.classList.remove('hidden');
+          toolbar.classList.remove('hidden');
+        } else if (mode === 'edit') {
+          paneEditor.classList.remove('hidden');
+          toolbar.classList.remove('hidden');
+        } else if (mode === 'raw') {
+          paneRaw.classList.remove('hidden');
+        }
+
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+          const active = btn.getAttribute('data-mode') === mode;
+          btn.classList.toggle('bg-[#007AFF]', active);
+          btn.classList.toggle('text-white', active);
+          btn.classList.toggle('text-sub', !active);
+        });
+      }
+
+      function applyThemeAndTypography() {
+        const root = document.documentElement;
+        root.classList.remove('theme-dark', 'theme-sepia');
+        if (state.theme === 'dark') root.classList.add('theme-dark');
+        if (state.theme === 'sepia') root.classList.add('theme-sepia');
+
+        const labelMap = {
+          light: '☀️ Terang',
+          dark: '🌙 Gelap',
+          sepia: '📜 Sepia'
+        };
+        const lbl = document.getElementById('themeIconLabel');
+        if (lbl) lbl.textContent = labelMap[state.theme] || '☀️ Terang';
+
+        root.style.setProperty('--reader-font-size', state.fontSize + 'px');
+        const fontObj = FONT_FAMILIES[state.fontFamilyIndex % FONT_FAMILIES.length];
+        root.style.setProperty('--reader-font-family', fontObj.css);
+        const btnFontFam = document.getElementById('btnFontFamily');
+        if (btnFontFam) btnFontFam.textContent = fontObj.label;
+
+        const paneToc = document.getElementById('paneToc');
+        if (paneToc) {
+          paneToc.classList.toggle('hidden', !state.showToc);
+        }
+      }
+
+      // =========================================================================
+      // 7. FILE OPENING (INPUT PICKER, DRAG & DROP, LAUNCH QUEUE, REMOTE URL)
+      // =========================================================================
+      function handleFilesSelected(fileList) {
+        if (!fileList || fileList.length === 0) return;
+        const files = Array.from(fileList);
+        let lastOpenedId = null;
+
+        files.forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = String(e.target.result || '');
+            const info = detectCategory(file.name);
+            const newId = 'doc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+            const newDoc = {
+              id: newId,
+              name: file.name,
+              ext: info.ext,
+              category: info.category,
+              favorite: false,
+              updatedAt: 'Baru dibuka',
+              subtitle: `File Lokal (${(file.size / 1024).toFixed(1)} KB)`,
+              badge: info.badge,
+              accent: 'from-[#007AFF] to-[#34C759]',
+              content: content
+            };
+            state.docs.unshift(newDoc);
+            state.activeDocId = newId;
+            lastOpenedId = newId;
+            saveDocs();
+            savePrefs();
+            renderAllLists();
+            switchView('reader');
+            showToast(`Berhasil membuka "${file.name}"`, 'FILE DIBUKA');
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function createNewBlankDocument() {
+        const newId = 'doc-' + Date.now();
+        const newDoc = {
+          id: newId,
+          name: `Catatan-Baru-${state.docs.length + 1}.md`,
+          ext: 'md',
+          category: 'md',
+          favorite: false,
+          updatedAt: 'Baru saja',
+          subtitle: 'Dokumen Markdown Baru',
+          badge: 'CATATAN BARU',
+          accent: 'from-[#5856D6] to-[#007AFF]',
+          content: `# Judul Dokumen Baru\n\nMulai menulis catatan **Markdown** Anda di sini.\n\n## Daftar Tugas\n- [ ] Item pertama\n- [ ] Item kedua\n`
+        };
+        state.docs.unshift(newDoc);
+        state.activeDocId = newId;
+        saveDocs();
+        savePrefs();
+        renderAllLists();
+        switchView('reader');
+        applyReaderMode('split');
+        showToast('Dokumen Markdown baru siap diedit', 'BARU');
+      }
+
+      function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        ta.remove();
+      }
+
+      function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType || 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      // =========================================================================
+      // 8. PWA SERVICE WORKER & GITHUB LIVE AUTO-UPDATE ENGINE
+      // =========================================================================
+      let swRegistration = null;
+
+      function showUpdateNotificationBanner(reasonText) {
+        const banner = document.getElementById('updateBanner');
+        const textEl = document.getElementById('updateBannerText');
+        if (textEl && reasonText) textEl.textContent = reasonText;
+        if (banner) banner.classList.remove('hidden');
+      }
+
+      async function checkGitHubLiveUpdate(manualTrigger) {
+        const lastCheckEl = document.getElementById('pwaLastCheckText');
+        const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (lastCheckEl) lastCheckEl.textContent = `Pukul ${nowStr}`;
+
+        try {
+          // 1. Trigger Service Worker script update check
+          if (swRegistration && swRegistration.update) {
+            await swRegistration.update();
+          }
+
+          // 2. Fetch index.html bypassing browser cache to detect direct GitHub file changes
+          if (location.protocol.startsWith('http')) {
+            const targetUrl = window.location.href.split('#')[0];
+            const sep = targetUrl.includes('?') ? '&' : '?';
+            const res = await fetch(targetUrl + sep + '_gh_sync=' + Date.now(), {
+              method: 'GET',
+              cache: 'no-store'
+            });
+            if (res && res.ok) {
+              const text = await res.text();
+              const signature = text.length + ':' + (res.headers.get('etag') || '') + ':' + (res.headers.get('last-modified') || '');
+              if (!state.initialIndexSignature) {
+                state.initialIndexSignature = signature;
+              } else if (state.initialIndexSignature !== signature) {
+                // Tell SW to refresh cache and notify user
+                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.controller.postMessage({ type: 'FORCE_REFRESH_CACHE' });
+                }
+                showUpdateNotificationBanner('Perubahan kodingan baru di GitHub terdeteksi! Klik Perbarui untuk memuat versi terbaru.');
+                return;
+              }
+            }
+          }
+
+          if (manualTrigger) {
+            showToast('Aplikasi sudah menggunakan versi GitHub terbaru', 'TERBARU');
+          }
+        } catch (err) {
+          if (manualTrigger) {
+            showToast('Mode Offline aktif — menggunakan cache lokal perangkat', 'OFFLINE');
+          }
+        }
+      }
+
+      function initServiceWorkerAndPwa() {
+        // Capture Chrome/Edge/Android beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          state.deferredInstallPrompt = e;
+        });
+
+        // Register sw.js for GitHub Pages / HTTPS / Localhost
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+          navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+            .then((reg) => {
+              swRegistration = reg;
+
+              // Detect if a new Service Worker is waiting
+              if (reg.waiting) {
+                showUpdateNotificationBanner('Versi baru MarkFlow dari GitHub siap diaktifkan.');
+              }
+
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    showUpdateNotificationBanner('Update kode GitHub berhasil diunduh. Muat ulang sekarang.');
+                  }
+                });
+              });
+            })
+            .catch(() => {
+              // In sandboxed preview iframe, SW registration is gracefully skipped
+            });
+
+          // Automatically reload when new Service Worker takes control
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
+
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SW_ACTIVATED') {
+              const verEl = document.getElementById('lblAppVersion');
+              if (verEl && event.data.version) verEl.textContent = event.data.version;
+            }
+          });
+        }
+
+        // Check for GitHub updates when user returns to app window/tab on phone or MacBook
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            checkGitHubLiveUpdate(false);
+          }
+        });
+        window.addEventListener('focus', () => checkGitHubLiveUpdate(false));
+
+        // Initial signature snapshot & periodic check every 45 seconds
+        checkGitHubLiveUpdate(false);
+        setInterval(() => checkGitHubLiveUpdate(false), 45000);
+
+        // Support PWA File Handling API (Opening .md directly from Finder on MacBook)
+        if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
+          window.launchQueue.setConsumer(async (launchParams) => {
+            if (!launchParams.files || launchParams.files.length === 0) return;
+            const fileObjects = [];
+            for (const handle of launchParams.files) {
+              try {
+                const file = await handle.getFile();
+                fileObjects.push(file);
+              } catch (e) {}
+            }
+            if (fileObjects.length > 0) {
+              handleFilesSelected(fileObjects);
+            }
+          });
+        }
+      }
+
+      async function triggerPwaInstall() {
+        if (state.deferredInstallPrompt) {
+          state.deferredInstallPrompt.prompt();
+          await state.deferredInstallPrompt.userChoice;
+          state.deferredInstallPrompt = null;
+        } else {
+          document.getElementById('modalInstallGuide').classList.remove('hidden');
+        }
+      }
+
+      // =========================================================================
+      // 9. EVENT LISTENERS BINDING
+      // =========================================================================
+      function bindEvents() {
+        const fileInput = document.getElementById('fileInputPicker');
+
+        // Open file triggers
+        ['btnSidebarOpenFile', 'btnTopOpenFile', 'btnHeroOpenFile', 'btnFavOpenNew', 'btnMobileQuickOpen'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => fileInput.click());
+        });
+
+        fileInput.addEventListener('change', (e) => {
+          handleFilesSelected(e.target.files);
+          fileInput.value = '';
+        });
+
+        // Create new doc triggers
+        ['btnSidebarNewDoc', 'btnHeroCreateNew'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', createNewBlankDocument);
+        });
+
+        // Navigation tabs (Sidebar + Mobile bottom bar)
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-nav');
+            if (target) switchView(target);
+          });
+        });
+
+        document.getElementById('btnBackToLibrary').addEventListener('click', () => switchView('today'));
+
+        // Category Filter Chips
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            state.categoryFilter = chip.getAttribute('data-filter') || 'all';
+            document.querySelectorAll('.filter-chip').forEach(c => {
+              const active = c.getAttribute('data-filter') === state.categoryFilter;
+              c.classList.toggle('bg-[#007AFF]', active);
+              c.classList.toggle('text-white', active);
+              c.classList.toggle('app-surface', !active);
+              c.classList.toggle('text-sub', !active);
+            });
+            renderAllLists();
+          });
+        });
+
+        // Search Input
+        const searchInput = document.getElementById('globalSearchInput');
+        searchInput.addEventListener('input', (e) => {
+          state.searchQuery = e.target.value || '';
+          if (state.currentView !== 'today') switchView('today');
+          renderAllLists();
+        });
+
+        // Delegated Click for Opening / Favoriting / Deleting Document Cards
+        document.addEventListener('click', (e) => {
+          const openBtn = e.target.closest('[data-open-doc]');
+          if (openBtn) {
+            const docId = openBtn.getAttribute('data-open-doc');
+            if (docId) {
+              state.activeDocId = docId;
+              savePrefs();
+              renderAllLists();
+              switchView('reader');
+            }
+            return;
+          }
+
+          const favBtn = e.target.closest('[data-fav-doc]');
+          if (favBtn) {
+            e.stopPropagation();
+            const docId = favBtn.getAttribute('data-fav-doc');
+            const targetDoc = state.docs.find(d => d.id === docId);
+            if (targetDoc) {
+              targetDoc.favorite = !targetDoc.favorite;
+              saveDocs();
+              renderAllLists();
+              showToast(targetDoc.favorite ? 'Ditambahkan ke Favorit' : 'Dihapus dari Favorit', 'FAVORIT');
+            }
+            return;
+          }
+
+          const delBtn = e.target.closest('[data-del-doc]');
+          if (delBtn) {
+            e.stopPropagation();
+            const docId = delBtn.getAttribute('data-del-doc');
+            if (state.docs.length <= 1) {
+              showToast('Minimal 1 dokumen harus tersisa di Pustaka', 'INFO');
+              return;
+            }
+            state.docs = state.docs.filter(d => d.id !== docId);
+            if (state.activeDocId === docId) {
+              state.activeDocId = state.docs[0].id;
+            }
+            saveDocs();
+            renderAllLists();
+            showToast('Dokumen dihapus dari Pustaka', 'DIHAPUS');
+          }
+        });
+
+        // Reader Mode Tabs
+        document.querySelectorAll('.mode-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            applyReaderMode(tab.getAttribute('data-mode') || 'preview');
+          });
+        });
+
+        // Live Editor Textarea & Title Editing
+        const textarea = document.getElementById('markdownTextarea');
+        textarea.addEventListener('input', () => {
+          const doc = getActiveDoc();
+          if (!doc) return;
+          doc.content = textarea.value;
+          doc.updatedAt = 'Baru diedit';
+          saveDocs();
+          renderActiveDocument();
+        });
+
+        const titleInput = document.getElementById('activeDocTitleInput');
+        titleInput.addEventListener('input', () => {
+          const doc = getActiveDoc();
+          if (!doc) return;
+          doc.name = titleInput.value || 'tanpa-judul.md';
+          const info = detectCategory(doc.name);
+          doc.ext = info.ext;
+          doc.category = info.category;
+          doc.badge = info.badge;
+          saveDocs();
+          renderAllLists();
+        });
+
+        // Markdown Quick Insert Toolbar
+        document.querySelectorAll('.md-tool-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const snippet = (btn.getAttribute('data-md-insert') || '').replace(/\\n/g, '\n');
+            const doc = getActiveDoc();
+            if (!doc) return;
+            const start = textarea.selectionStart || 0;
+            const end = textarea.selectionEnd || 0;
+            const current = textarea.value;
+            textarea.value = current.slice(0, start) + snippet + current.slice(end);
+            doc.content = textarea.value;
+            saveDocs();
+            renderActiveDocument();
+            textarea.focus();
+          });
+        });
+
+        // Reader Action Buttons (Favorite, Font Size, Font Family, TOC, Download, HTML Export, Print, Copy)
+        document.getElementById('btnToggleFavorite').addEventListener('click', () => {
+          const doc = getActiveDoc();
+          if (!doc) return;
+          doc.favorite = !doc.favorite;
+          saveDocs();
+          renderActiveDocument();
+          renderAllLists();
+          showToast(doc.favorite ? 'Disimpan ke Favorit' : 'Dihapus dari Favorit', 'FAVORIT');
+        });
+
+        document.getElementById('btnFontSmaller').addEventListener('click', () => {
+          state.fontSize = Math.max(12, state.fontSize - 1);
+          savePrefs();
+          applyThemeAndTypography();
+        });
+
+        document.getElementById('btnFontLarger').addEventListener('click', () => {
+          state.fontSize = Math.min(24, state.fontSize + 1);
+          savePrefs();
+          applyThemeAndTypography();
+        });
+
+        document.getElementById('btnFontFamily').addEventListener('click', () => {
+          state.fontFamilyIndex = (state.fontFamilyIndex + 1) % FONT_FAMILIES.length;
+          savePrefs();
+          applyThemeAndTypography();
+        });
+
+        document.getElementById('btnToggleToc').addEventListener('click', () => {
+          state.showToc = !state.showToc;
+          savePrefs();
+          applyThemeAndTypography();
+        });
+
+        document.getElementById('btnDownloadMd').addEventListener('click', () => {
+          const doc = getActiveDoc();
+          if (!doc) return;
+          downloadFile(doc.name || 'dokumen.md', doc.content, 'text/markdown;charset=utf-8');
+          showToast(`Mengunduh ${doc.name}`, 'UNDUH');
+        });
+
+        document.getElementById('btnExportHtml').addEventListener('click', () => {
+          const doc = getActiveDoc();
+          if (!doc) return;
+          const renderedHtml = document.getElementById('markdownRendered').innerHTML;
+          const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(doc.name)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:780px;margin:40px auto;padding:0 20px;line-height:1.7;color:#1c1c1e}pre{background:#16181d;color:#e6edf3;padding:16px;border-radius:12px;overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px 12px}</style></head><body>${renderedHtml}</body></html>`;
+          const outName = doc.name.replace(/\.[^.]+$/, '') + '.html';
+          downloadFile(outName, fullHtml, 'text/html;charset=utf-8');
+          showToast(`Berhasil mengekspor ${outName}`, 'EKSPOR HTML');
+        });
+
+        document.getElementById('btnPrintDoc').addEventListener('click', () => {
+          window.print();
+        });
+
+        ['btnCopyRawContent', 'btnCopyRawPane'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => {
+            const doc = getActiveDoc();
+            if (!doc) return;
+            copyTextToClipboard(doc.content);
+            showToast('Isi dokumen berhasil disalin ke clipboard', 'TERSALIN');
+          });
+        });
+
+        // Theme Cycle Button
+        document.getElementById('btnCycleTheme').addEventListener('click', () => {
+          const order = ['light', 'dark', 'sepia'];
+          const nextIdx = (order.indexOf(state.theme) + 1) % order.length;
+          state.theme = order[nextIdx];
+          savePrefs();
+          applyThemeAndTypography();
+        });
+
+        // Remote URL Modal
+        const modalUrl = document.getElementById('modalFetchUrl');
+        ['btnSidebarFetchUrl', 'btnHeroOpenUrl'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => modalUrl.classList.remove('hidden'));
+        });
+        ['btnCloseUrlModal', 'btnCancelUrlModal'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => modalUrl.classList.add('hidden'));
+        });
+
+        document.getElementById('btnConfirmFetchUrl').addEventListener('click', async () => {
+          const input = document.getElementById('inputRemoteUrl');
+          const url = (input.value || '').trim();
+          if (!url) {
+            showToast('Masukkan URL file terlebih dahulu', 'URL KOSONG');
+            return;
+          }
+          try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error('Gagal memuat URL');
+            const text = await res.text();
+            const cleanName = url.split('/').pop().split('?')[0] || 'remote-file.md';
+            const info = detectCategory(cleanName);
+            const newId = 'doc-url-' + Date.now();
+            state.docs.unshift({
+              id: newId,
+              name: cleanName,
+              ext: info.ext,
+              category: info.category,
+              favorite: false,
+              updatedAt: 'Dari URL',
+              subtitle: url,
+              badge: 'GITHUB / URL',
+              accent: 'from-[#5856D6] to-[#007AFF]',
+              content: text
+            });
+            state.activeDocId = newId;
+            saveDocs();
+            modalUrl.classList.add('hidden');
+            input.value = '';
+            switchView('reader');
+            showToast(`Berhasil mengimpor "${cleanName}"`, 'IMPOR URL');
+          } catch (err) {
+            showToast('Gagal mengambil URL. Pastikan tautan mendukung CORS (seperti raw.githubusercontent.com).', 'GAGAL');
+          }
+        });
+
+        // PWA Install & Update Buttons
+        ['btnSidebarInstallPwa', 'btnHeroInstallBadge', 'btnPwaTriggerInstall'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', triggerPwaInstall);
+        });
+
+        ['btnCloseInstallModal', 'btnOkInstallModal'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => document.getElementById('modalInstallGuide').classList.add('hidden'));
+        });
+
+        ['btnSidebarCheckUpdate', 'btnPwaForceCheck'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => checkGitHubLiveUpdate(true));
+        });
+
+        document.getElementById('btnApplyUpdate').addEventListener('click', () => {
+          if (swRegistration && swRegistration.waiting) {
+            swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          window.location.reload();
+        });
+
+        document.getElementById('btnDismissUpdate').addEventListener('click', () => {
+          document.getElementById('updateBanner').classList.add('hidden');
+        });
+
+        // Fullscreen Drag & Drop File Support
+        const dropOverlay = document.getElementById('dropZoneOverlay');
+        let dragCounter = 0;
+
+        window.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+          dragCounter++;
+          dropOverlay.classList.remove('hidden');
+        });
+
+        window.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        window.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dragCounter--;
+          if (dragCounter <= 0) {
+            dragCounter = 0;
+            dropOverlay.classList.add('hidden');
+          }
+        });
+
+        window.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dragCounter = 0;
+          dropOverlay.classList.add('hidden');
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFilesSelected(e.dataTransfer.files);
+          }
+        });
+      }
+
+      // =========================================================================
+      // 10. INITIALIZE APPLICATION ON LOAD
+      // =========================================================================
+      window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        applyThemeAndTypography();
+        bindEvents();
+        renderAllLists();
+        renderActiveDocument();
+        switchView('today');
+        initServiceWorkerAndPwa();
+
+        // Check URL parameters for PWA Shortcuts (?action=open or ?action=new)
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('action') === 'new') {
+          createNewBlankDocument();
+        } else if (params.get('action') === 'open') {
+          switchView('reader');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
